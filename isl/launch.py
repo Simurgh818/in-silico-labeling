@@ -62,6 +62,8 @@ flags.DEFINE_string('master', 'local',
                     'BNS name of the TensorFlow master to use.')
 flags.DEFINE_string('base_directory', '/tmp/minception/',
                     'Directory where model checkpoints are written.')
+flags.DEFINE_string('output_path', '/tmp/output_path/',
+                    'Directory where model outputs are written.')
 flags.DEFINE_string('export_directory', '/tmp/minception_export/',
                     'Directory where exported model is written.')
 flags.DEFINE_integer(
@@ -100,6 +102,9 @@ flags.DEFINE_integer(
     'learning_decay_steps', 1 << 12,
     'The learning decay steps, used by the MOMENTUM optimizer.')
 
+flags.DEFINE_integer('until_step', None,
+  'The training will go on till the step mentinoed.')
+
 flags.DEFINE_bool(
     'read_pngs', False,
     'Whether to read the input images from a provided folder rather than '
@@ -137,7 +142,7 @@ flags.DEFINE_integer('loss_crop_size', 520, 'Image crop size for training.')
 flags.DEFINE_integer('loss_patch_stride', 256, '')
 flags.DEFINE_integer('stitch_crop_size', 500, 'Image crop size for stitching.')
 flags.DEFINE_integer(
-    'infer_size', 16,
+    'infer_size', 1,
     'The number of inferences to do in parallel in each row x column dimension.'
     ' For example, a size of 16 will do 16 x 16 = 256 inferences in parallel.')
 flags.DEFINE_bool('infer_continuously', False,
@@ -154,11 +159,11 @@ flags.DEFINE_float('augment_multiplier_std', 0.0,
 flags.DEFINE_float('augment_noise_std', 0.0,
                    'Augmentation noise corruption parameter.')
 
-flags.DEFINE_integer('preprocess_batch_size', 16, 'Batch size for the model.')
+flags.DEFINE_integer('preprocess_batch_size', 1, 'Batch size for the model.')
 flags.DEFINE_integer(
-    'preprocess_shuffle_batch_num_threads', 16,
+    'preprocess_shuffle_batch_num_threads', 1,
     'Number of threads doing the second half of preprocessing during training.')
-flags.DEFINE_integer('preprocess_batch_capacity', 64,
+flags.DEFINE_integer('preprocess_batch_capacity', 1,
                      'Batch capacity for second half of preprocessing.')
 
 flags.DEFINE_bool(
@@ -459,7 +464,7 @@ def train(gitapp: controller.GetInputTargetAndPredictedParameters):
         logdir=output_directory(),
         master=FLAGS.master,
         is_chief=FLAGS.task == 0,
-        number_of_steps=None,
+        number_of_steps=FLAGS.until_step,
         save_summaries_secs=FLAGS.save_summaries_secs,
         save_interval_secs=FLAGS.save_interval_secs,
         init_fn=init_fn,
