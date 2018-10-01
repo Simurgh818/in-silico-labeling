@@ -142,7 +142,7 @@ flags.DEFINE_integer('loss_crop_size', 520, 'Image crop size for training.')
 flags.DEFINE_integer('loss_patch_stride', 256, '')
 flags.DEFINE_integer('stitch_crop_size', 500, 'Image crop size for stitching.')
 flags.DEFINE_integer(
-    'infer_size', 1,
+    'infer_size', 16,
     'The number of inferences to do in parallel in each row x column dimension.'
     ' For example, a size of 16 will do 16 x 16 = 256 inferences in parallel.')
 flags.DEFINE_bool('infer_continuously', False,
@@ -159,11 +159,11 @@ flags.DEFINE_float('augment_multiplier_std', 0.0,
 flags.DEFINE_float('augment_noise_std', 0.0,
                    'Augmentation noise corruption parameter.')
 
-flags.DEFINE_integer('preprocess_batch_size', 1, 'Batch size for the model.')
+flags.DEFINE_integer('preprocess_batch_size', 16, 'Batch size for the model.')
 flags.DEFINE_integer(
-    'preprocess_shuffle_batch_num_threads', 1,
+    'preprocess_shuffle_batch_num_threads', 16,
     'Number of threads doing the second half of preprocessing during training.')
-flags.DEFINE_integer('preprocess_batch_capacity', 1,
+flags.DEFINE_integer('preprocess_batch_capacity', 64,
                      'Batch capacity for second half of preprocessing.')
 
 flags.DEFINE_bool(

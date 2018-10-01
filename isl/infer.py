@@ -297,4 +297,7 @@ def infer(
           os.path.join(output_directory, 'target_error_panel.png'),
           target_error_panel[0, :, :, :])
 
+      util.write_image(
+          os.path.join(output_directory, 'prediction_panel.tif'),
+          target_error_panel[0,:, 0:(image_num_columns//(num_column_inferences-1)), :])
       logging.info('Done generating images')
