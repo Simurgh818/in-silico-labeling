@@ -30,6 +30,8 @@ from isl import data_provider
 from isl import ops
 from isl import util
 from isl import visualize
+from datetime import datetime
+from time import strftime
 
 gfile = tf.gfile
 logging = tf.logging
@@ -286,7 +288,10 @@ def infer(
               predict_target_lt: stitched_predict_target,
           })
 
-      output_directory = os.path.join(output_directory, '%.8d' % global_step)
+      date_time = datetime.now().strftime("%m-%d-%Y_%H:%M")
+
+      output_folder_name = '%.8d' % global_step + '_' + rpp.directory.split('/')[-1] + '_' + date_time
+      output_directory = os.path.join(output_directory, output_folder_name)
       if not gfile.Exists(output_directory):
         gfile.MakeDirs(output_directory)
 
@@ -297,7 +302,9 @@ def infer(
           os.path.join(output_directory, 'target_error_panel.png'),
           target_error_panel[0, :, :, :])
 
-      prediction_part = (image_num_columns//3)
+      Val1, row, column, Val2 = target_error_panel.shape
+
+      prediction_part = (column//3)
       util.write_image(
           os.path.join(output_directory, 'prediction_panel.tif'),
           target_error_panel[0,:, 0:prediction_part, :])
