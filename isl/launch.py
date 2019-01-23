@@ -389,7 +389,7 @@ def output_directory() -> str:
     else:
       suffix = 'stitch'
 
-    return os.path.join(FLAGS.base_directory, prefix + suffix)
+    return os.path.join(FLAGS.output_path, prefix + suffix)
 
 
 def total_loss(

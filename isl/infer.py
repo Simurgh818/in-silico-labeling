@@ -288,13 +288,16 @@ def infer(
               predict_target_lt: stitched_predict_target,
           })
 
+      # Sina testing
+      Val1, row, column, Val2 = target_error_panel.shape
+
       date_time = datetime.now().strftime("%m-%d-%Y_%H:%M")
 
-      output_folder_name = '%.8d' % global_step + '_' + rpp.directory.split('/')[-1] + '_' + date_time
+      output_folder_name = '%.8d' % global_step + '_' + rpp.directory.split('/')[-2] + '_'+ rpp.directory.split('/')[-1] + '_' + date_time
       output_directory = os.path.join(output_directory, output_folder_name)
       if not gfile.Exists(output_directory):
         gfile.MakeDirs(output_directory)
-
+      print ("output_directory is: ", output_directory,'\n')
       util.write_image(
           os.path.join(output_directory, 'input_error_panel.png'),
           input_error_panel[0, :, :, :])
@@ -306,6 +309,14 @@ def infer(
 
       prediction_part = (column//3)
       util.write_image(
-          os.path.join(output_directory, 'prediction_panel.tif'),
+          os.path.join(output_directory, 'prediction_panel.png'),
           target_error_panel[0,:, 0:prediction_part, :])
+
+
+      target_error_panel_prediction = target_error_panel[0,:, 0:prediction_part, :]
+      path = str(os.path.join(output_directory,'prediction_panel.png'))
+      tif_image =util.read_image(path)
+      tif_path = str(os.path.join(output_directory,'prediction_panel.tif'))
+      util.write_image(tif_path,tif_image)
+
       logging.info('Done generating images')
