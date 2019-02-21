@@ -293,7 +293,7 @@ def infer(
 
       date_time = datetime.now().strftime("%m-%d-%Y_%H:%M")
 
-      output_folder_name = '%.8d' % global_step + '_' + rpp.directory.split('/')[-2] + '_'+ rpp.directory.split('/')[-1] + '_' + date_time
+      output_folder_name = '%.8d' % global_step + '_' + rpp.directory.split('/')[-2] + '/'+ rpp.directory.split('/')[-1] + '_' + date_time
       output_directory = os.path.join(output_directory, output_folder_name)
       if not gfile.Exists(output_directory):
         gfile.MakeDirs(output_directory)
