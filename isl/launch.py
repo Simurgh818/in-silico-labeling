@@ -244,14 +244,13 @@ def data_parameters() -> data_provider.DataParameters:
     else:
       directory = FLAGS.dataset_eval_directory
 
-  if FLAGS.metric == METRIC_LOSS:
-      crop_size = FLAGS.loss_crop_size
-  else:
-      crop_size = FLAGS.stitch_crop_size
+    if FLAGS.metric == METRIC_LOSS:
+        crop_size = FLAGS.loss_crop_size
+    else:
+        crop_size = FLAGS.stitch_crop_size
 
-    io_parameters = data_provider.ReadPNGsParameters(directory, None, None,
-                                                     crop_size)
-  else:
+    io_parameters = data_provider.ReadPNGsParameters(directory, None, None, crop_size)
+    else:
     # Use an eighth of the dataset for validation.
     if FLAGS.mode == MODE_TRAIN or FLAGS.mode == MODE_EVAL_TRAIN:
       dataset = [
@@ -294,8 +293,8 @@ def data_parameters() -> data_provider.DataParameters:
         pad_width,
         crop_size)
 
-  z_values = get_z_values()
-  return data_provider.DataParameters(io_parameters, z_values,
+    z_values = get_z_values()
+    return data_provider.DataParameters(io_parameters, z_values,
                                       INPUT_CHANNEL_VALUES, TARGET_Z_VALUES,
                                       TARGET_CHANNEL_VALUES)
 
