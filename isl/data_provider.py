@@ -57,8 +57,8 @@ def parse_image_path(path: str) -> ImageMetadata:
       raise ValueError('Failed to match z in path: %s', path)
     z = int(match.group(1))
 
-  channel_pattern = re.compile(r'.*channel,value-(\w+),.*')
-  # (r'.*_(\w+)_0_(\d+)_1.*')
+  channel_pattern = re.compile(r'.*_(\w+)_0_(\d+)_1.*')
+  # (r'.*channel,value-(\w+),.*')
   match = channel_pattern.match(path)
   if not match:
     raise ValueError('Failed to match channel in path: %s', path)

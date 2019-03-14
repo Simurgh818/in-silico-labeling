@@ -244,9 +244,9 @@ def data_parameters() -> data_provider.DataParameters:
     else:
       directory = FLAGS.dataset_eval_directory
 
-    if FLAGS.metric == METRIC_LOSS:
+  if FLAGS.metric == METRIC_LOSS:
       crop_size = FLAGS.loss_crop_size
-    else:
+  else:
       crop_size = FLAGS.stitch_crop_size
 
     io_parameters = data_provider.ReadPNGsParameters(directory, None, None,
