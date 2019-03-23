@@ -132,7 +132,7 @@ GetInputTargetAndPredictedParameters = NamedTuple(
         ('is_train', bool),
     ])
 # pylint: enable=invalid-name
-
+print('data_provider.DataParameters is: ', data_provider.DataParameters.io_parameters)
 
 @tensorcheck.well_defined()
 def model(core_model: Callable,

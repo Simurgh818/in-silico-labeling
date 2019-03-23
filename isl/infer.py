@@ -46,6 +46,7 @@ def infer(
     stitch_stride: int,
     infer_size: int,
     channel_whitelist: Optional[List[str]],
+    error_panels: bool,
     simplify_error_panels: bool,
 ):
   """Runs inference on an image.
@@ -64,6 +65,7 @@ def infer(
     channel_whitelist: If provided, only images for the given channels will
       be produced.
       This can be used to create simpler error panels.
+    error_panels: whether to show the error panels
     simplify_error_panels: Whether to create simplified error panels.
 
   Raises:
@@ -72,6 +74,7 @@ def infer(
       2) The images must be larger than the input to the network.
       3) The graph must not contain queues.
   """
+  print('gitapp dp is: ', controller.GetInputTargetAndPredictedParameters.dp)
   rpp = gitapp.dp.io_parameters
   if not isinstance(rpp, data_provider.ReadPNGsParameters):
     raise ValueError(
@@ -97,8 +100,7 @@ def infer(
 
   num_row_inferences = (image_num_rows - extract_patch_size) // (
       stitch_stride * infer_size)
-  num_column_inferences = (image_num_columns - extract_patch_size) // (
-      stitch_stride * infer_size)
+  num_column_inferences = (image_num_columns - extract_patch_size) // (stitch_stride * infer_size)
   logging.info('Running %d x %d inferences', num_row_inferences,
                num_column_inferences)
   num_output_rows = (num_row_inferences * infer_size * stitch_stride)
@@ -217,9 +219,7 @@ def infer(
       else:
         return tensor
 
-    target_error_panel_lt = visualize.error_panel_from_statistics(
-        select_channels(target_lt), select_channels(predict_target_lt),
-        simplify_error_panels)
+    target_error_panel_lt = visualize.error_panel_from_statistics(select_channels(target_lt), select_channels(predict_target_lt), simplify_error_panels)
 
     # There shouldn't be any queues in this configuration.
     queue_runners = g.get_collection(tf.GraphKeys.QUEUE_RUNNERS)
@@ -259,7 +259,7 @@ def infer(
                   row_start: rs,
                   column_start: cs
               })
-
+          print('inpt =', inpt)
           input_row.append(inpt)
           predict_input_row.append(predict_input)
           target_row.append(target)
@@ -287,7 +287,6 @@ def infer(
               target_lt: stitched_target,
               predict_target_lt: stitched_predict_target,
           })
-
       # Sina testing
       Val1, row, column, Val2 = target_error_panel.shape
 

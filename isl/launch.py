@@ -142,13 +142,17 @@ flags.DEFINE_integer('loss_crop_size', 520, 'Image crop size for training.')
 flags.DEFINE_integer('loss_patch_stride', 256, '')
 flags.DEFINE_integer('stitch_crop_size', 500, 'Image crop size for stitching.')
 flags.DEFINE_integer(
-    'infer_size', 16,
+    'infer_size', 1,
     'The number of inferences to do in parallel in each row x column dimension.'
     ' For example, a size of 16 will do 16 x 16 = 256 inferences in parallel.')
 flags.DEFINE_bool('infer_continuously', False,
                   'Whether to run inference in a while loop.')
 flags.DEFINE_string('infer_channel_whitelist', None,
                     'If provided, the channels to whitelist for inference.')
+
+flags.DEFINE_bool('error_panels', False,
+                  'Whether to show the error panels.')
+
 flags.DEFINE_bool('infer_simplify_error_panels', True,
                   'Whether to simplify the error panels.')
 
@@ -159,11 +163,11 @@ flags.DEFINE_float('augment_multiplier_std', 0.0,
 flags.DEFINE_float('augment_noise_std', 0.0,
                    'Augmentation noise corruption parameter.')
 
-flags.DEFINE_integer('preprocess_batch_size', 16, 'Batch size for the model.')
+flags.DEFINE_integer('preprocess_batch_size', 1, 'Batch size for the model.')
 flags.DEFINE_integer(
-    'preprocess_shuffle_batch_num_threads', 16,
+    'preprocess_shuffle_batch_num_threads', 1,
     'Number of threads doing the second half of preprocessing during training.')
-flags.DEFINE_integer('preprocess_batch_capacity', 64,
+flags.DEFINE_integer('preprocess_batch_capacity', 1,
                      'Batch capacity for second half of preprocessing.')
 
 flags.DEFINE_bool(
@@ -245,12 +249,13 @@ def data_parameters() -> data_provider.DataParameters:
       directory = FLAGS.dataset_eval_directory
 
     if FLAGS.metric == METRIC_LOSS:
-        crop_size = FLAGS.loss_crop_size
+      crop_size = FLAGS.loss_crop_size
     else:
-        crop_size = FLAGS.stitch_crop_size
+      crop_size = FLAGS.stitch_crop_size
 
     io_parameters = data_provider.ReadPNGsParameters(directory, None, None, crop_size)
-    else:
+    print("The io_parameters are: ", io_parameters)
+  else:
     # Use an eighth of the dataset for validation.
     if FLAGS.mode == MODE_TRAIN or FLAGS.mode == MODE_EVAL_TRAIN:
       dataset = [
@@ -565,6 +570,7 @@ def infer_single_image(gitapp: controller.GetInputTargetAndPredictedParameters):
         stitch_stride=CONCORDANCE_STITCH_STRIDE,
         infer_size=FLAGS.infer_size,
         channel_whitelist=infer_channel_whitelist,
+        error_panels=FLAGS.error_panels,
         simplify_error_panels=FLAGS.infer_simplify_error_panels,
     )
     if not FLAGS.infer_continuously:

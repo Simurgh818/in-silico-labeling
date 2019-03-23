@@ -49,8 +49,8 @@ def parse_image_path(path: str) -> ImageMetadata:
   # (r'.*z_depth-(\d+),.*')
 
   if 'depth_computation,value-MAXPROJECT' in path:
-  # 'depth_computation-MAXPROJECT'
-  z = 'MAXPROJECT'
+    # 'depth_computation-MAXPROJECT'
+    z = 'MAXPROJECT'
   else:
     match = z_pattern.match(path)
     if not match:
@@ -60,6 +60,7 @@ def parse_image_path(path: str) -> ImageMetadata:
   channel_pattern = re.compile(r'.*_(\w+)_0_(\d+)_1.*')
   # (r'.*channel,value-(\w+),.*')
   match = channel_pattern.match(path)
+  print('The entire match is: ', match.group(0))
   if not match:
     raise ValueError('Failed to match channel in path: %s', path)
   channel = match.group(1)
@@ -88,7 +89,6 @@ def num_z_values(ims: List[ImageMetadata]) -> int:
       z_values.append(im.z)
 
   num_z = len(set(z_values))
-
   if sorted(list(set(z_values))) != list(range(num_z)):
     raise ValueError('Invalid z values: %r', sorted(list(set(z_values))))
 
@@ -148,7 +148,6 @@ def image_set_to_tensor(images: Dict[ImageMetadata, np.ndarray],
     ValueError: If zero z or channel values are supplied.
   """
   with tf.name_scope(name, 'load_image_set_as_tensor', []) as scope:
-
     def crop(image: np.ndarray) -> tf.Tensor:
       tensor = tensor_from_array(image)
       return tensor[row_start:row_start + crop_size, column_start:
@@ -427,6 +426,7 @@ DataParameters = NamedTuple('DataParameters', [
     ('target_channel_values', List[str]),
 ])
 
+print('The data parameters io_parameters is: ', DataParameters.io_parameters, '\n')
 # pylint: enable=invalid-name
 
 
