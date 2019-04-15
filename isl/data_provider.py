@@ -48,7 +48,7 @@ def parse_image_path(path: str) -> ImageMetadata:
   z_pattern = re.compile(r'.*_0_(\d+)_1.*')
   # (r'.*z_depth-(\d+),.*')
 
-  if 'depth_computation,value-MAXPROJECT' in path:
+  if 'MAXPROJECT' in path:
     # 'depth_computation-MAXPROJECT'
     z = 'MAXPROJECT'
   else:
@@ -56,14 +56,29 @@ def parse_image_path(path: str) -> ImageMetadata:
     if not match:
       raise ValueError('Failed to match z in path: %s', path)
     z = int(match.group(1))
-
+  print(z)
   channel_pattern = re.compile(r'.*_(\w+)_0_(\d+)_1.*')
-  # (r'.*channel,value-(\w+),.*')
+  # re.compile(r'.*_(\w+)_0_(\d+)_1.*')
+  # re.compile(r'.*-value_(\w+)_0_(\d+)_1.*')
+  # re.compile(r'.*channel,value-(\w+),.*')
+  # os.path.basename(path).split('_')[6]
+
+
+  # print(channel_pattern) > this prints out: re.compile('.*Transmission-(\\w+).*')
   match = channel_pattern.match(path)
+  print('match is: ', match)
   print('The entire match is: ', match.group(0))
+  print('The first part of the match is: ', match.group(1))
   if not match:
     raise ValueError('Failed to match channel in path: %s', path)
+
   channel = match.group(1)
+  if match.group(1)=='DAPI':
+      channel='DAPI_CONFOCAL'
+  elif match.group(1)=='MAP2':
+      channel='MAP2_CONFOCAL'
+  elif match.group(1)=='NFH':
+      channel='NFH_CONFOCAL'
 
   return ImageMetadata(z, channel)
 
@@ -426,7 +441,6 @@ DataParameters = NamedTuple('DataParameters', [
     ('target_channel_values', List[str]),
 ])
 
-print('The data parameters io_parameters is: ', DataParameters.io_parameters, '\n')
 # pylint: enable=invalid-name
 
 
@@ -439,33 +453,40 @@ def cropped_input_and_target(
     if isinstance(dp.io_parameters, ReadPNGsParameters):
       image_set = load_image_set(dp.io_parameters.directory)
       num_rows, num_columns = list(image_set.values())[0].shape
+      print('row and column start in data_provider.py is: ', dp.io_parameters.row_start, dp.io_parameters.column_start)
       assert num_rows >= dp.io_parameters.crop_size, (
           'Crop size must not be larger than the '
           'number of image rows.')
       assert num_columns >= dp.io_parameters.crop_size, (
           'Crop size must not be larger than the '
           'number of image columns.')
+      # assert dp.io_parameters.row_start ==300, 'row_start is not set!.'
 
       if dp.io_parameters.row_start is None:
         row_start = tf.random_uniform(
             [], 0, num_rows - dp.io_parameters.crop_size + 1, dtype=tf.int32)
       else:
         row_start = dp.io_parameters.row_start
+        logging.info('row_start is: %r', row_start)
 
       if dp.io_parameters.column_start is None:
         column_start = tf.random_uniform(
             [], 0, num_columns - dp.io_parameters.crop_size + 1, dtype=tf.int32)
       else:
         column_start = dp.io_parameters.column_start
+        logging.info('column_start is: %r', column_start)
 
       input_lt = image_set_to_tensor(image_set, dp.input_z_values,
                                      dp.input_channel_values, row_start,
                                      column_start, dp.io_parameters.crop_size)
+      logging.info('The input_lt is: %r', input_lt)
 
       target_lt = image_set_to_tensor(image_set, dp.target_z_values,
                                       dp.target_channel_values, row_start,
                                       column_start, dp.io_parameters.crop_size)
       target_lt = add_synthetic_channels(target_lt, name=scope + 'target')
+      logging.info('The target_lt is: %r', target_lt)
+
     else:
       serialized_example_lt = read_serialized_example(
           dp.io_parameters.shard_paths, dp.io_parameters.is_recordio,

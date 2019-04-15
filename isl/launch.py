@@ -141,6 +141,10 @@ flags.DEFINE_integer(
 flags.DEFINE_integer('loss_crop_size', 520, 'Image crop size for training.')
 flags.DEFINE_integer('loss_patch_stride', 256, '')
 flags.DEFINE_integer('stitch_crop_size', 500, 'Image crop size for stitching.')
+
+flags.DEFINE_integer('row_start', 500, 'The row to start prediction.')
+flags.DEFINE_integer('column_start', 500, 'The column to start prediction.')
+
 flags.DEFINE_integer(
     'infer_size', 1,
     'The number of inferences to do in parallel in each row x column dimension.'
@@ -210,10 +214,11 @@ def get_z_values() -> List[float]:
   logging.info('z_values: %r', values)
   return values
 
+# 'Brightfield'
 
 INPUT_CHANNEL_VALUES = [
     'BRIGHTFIELD',
-    'PHASE_CONTRAST',
+    'PhaseContrast',
     'DIC',
 ]
 TARGET_Z_VALUES = ['MAXPROJECT']
@@ -253,8 +258,10 @@ def data_parameters() -> data_provider.DataParameters:
     else:
       crop_size = FLAGS.stitch_crop_size
 
-    io_parameters = data_provider.ReadPNGsParameters(directory, None, None, crop_size)
-    print("The io_parameters are: ", io_parameters)
+    io_parameters = data_provider.ReadPNGsParameters(directory, FLAGS.row_start, FLAGS.column_start, crop_size)
+    assert FLAGS.row_start==300, 'row_start is not set.'
+    print('The io_parameters in launch.py are: ', io_parameters)
+
   else:
     # Use an eighth of the dataset for validation.
     if FLAGS.mode == MODE_TRAIN or FLAGS.mode == MODE_EVAL_TRAIN:
@@ -298,8 +305,8 @@ def data_parameters() -> data_provider.DataParameters:
         pad_width,
         crop_size)
 
-    z_values = get_z_values()
-    return data_provider.DataParameters(io_parameters, z_values,
+  z_values = get_z_values()
+  return data_provider.DataParameters(io_parameters, z_values,
                                       INPUT_CHANNEL_VALUES, TARGET_Z_VALUES,
                                       TARGET_CHANNEL_VALUES)
 
@@ -560,6 +567,7 @@ def infer_single_image(gitapp: controller.GetInputTargetAndPredictedParameters):
     infer_channel_whitelist = FLAGS.infer_channel_whitelist.split(',')
   else:
     infer_channel_whitelist = None
+  print('The infer_channel_whitelist in launch.py is: ', infer_channel_whitelist)
 
   while True:
     infer.infer(

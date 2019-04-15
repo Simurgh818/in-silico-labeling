@@ -74,8 +74,10 @@ def infer(
       2) The images must be larger than the input to the network.
       3) The graph must not contain queues.
   """
-  print('gitapp dp is: ', controller.GetInputTargetAndPredictedParameters.dp)
   rpp = gitapp.dp.io_parameters
+  # Sina testing
+  print('the io_parameters directory is: ',rpp.directory)
+
   if not isinstance(rpp, data_provider.ReadPNGsParameters):
     raise ValueError(
         'Data provider must contain a ReadPNGsParameter, but was: %r',
@@ -98,9 +100,15 @@ def infer(
   logging.info('After cropping, input image size is (%d, %d)', image_num_rows,
                image_num_columns)
 
+  # Sina Troubleshooting:
+  # print('image_num_rows, extract_patch_size, image_num_rows - extract_patch_size', image_num_rows, extract_patch_size, image_num_rows - extract_patch_size)
+  # print('stitch_stride, infer_size, stitch_stride * infer_size', stitch_stride, infer_size, stitch_stride * infer_size)
+
   num_row_inferences = (image_num_rows - extract_patch_size) // (
       stitch_stride * infer_size)
   num_column_inferences = (image_num_columns - extract_patch_size) // (stitch_stride * infer_size)
+
+  # print('num_column_inferences', num_column_inferences)
   logging.info('Running %d x %d inferences', num_row_inferences,
                num_column_inferences)
   num_output_rows = (num_row_inferences * infer_size * stitch_stride)
@@ -259,25 +267,37 @@ def infer(
                   row_start: rs,
                   column_start: cs
               })
+
+          # Sina Troubleshooting:
           print('inpt =', inpt)
+
           input_row.append(inpt)
           predict_input_row.append(predict_input)
           target_row.append(target)
           predict_target_row.append(predict_target)
+
+        # Sina Troubleshooting:
+        # print('Input row =', input_row)
+
         input_rows.append(np.concatenate(input_row, axis=2))
         predict_input_rows.append(np.concatenate(predict_input_row, axis=2))
         target_rows.append(np.concatenate(target_row, axis=2))
         predict_target_rows.append(np.concatenate(predict_target_row, axis=2))
 
       logging.info('Stitching')
+
+
       stitched_input = np.concatenate(input_rows, axis=1)
       stitched_predict_input = np.concatenate(predict_input_rows, axis=1)
       stitched_target = np.concatenate(target_rows, axis=1)
       stitched_predict_target = np.concatenate(predict_target_rows, axis=1)
 
       logging.info('Creating error panels')
+# target_panel,
+
       [input_error_panel, target_error_panel, global_step] = sess.run(
           [
+          # , target_panel_lt
               input_error_panel_lt, target_error_panel_lt,
               tf.train.get_global_step()
           ],
@@ -288,7 +308,7 @@ def infer(
               predict_target_lt: stitched_predict_target,
           })
       # Sina testing
-      Val1, row, column, Val2 = target_error_panel.shape
+
 
       date_time = datetime.now().strftime("%m-%d-%Y_%H:%M")
 
@@ -307,15 +327,28 @@ def infer(
       Val1, row, column, Val2 = target_error_panel.shape
 
       prediction_part = (column//3)
+
       util.write_image(
           os.path.join(output_directory, 'prediction_panel.png'),
           target_error_panel[0,:, 0:prediction_part, :])
+      # Making separate files for the labels
+      print("the channel_whitelist in infer.py are: ", channel_whitelist)
+      prediction_rows_start = 0
 
 
-      target_error_panel_prediction = target_error_panel[0,:, 0:prediction_part, :]
+      # target_error_panel_prediction = target_error_panel[0,:, 0:prediction_part, :]
       path = str(os.path.join(output_directory,'prediction_panel.png'))
       tif_image =util.read_image(path)
       tif_path = str(os.path.join(output_directory,'prediction_panel.tif'))
       util.write_image(tif_path,tif_image)
+
+      prediction_rows = row//3
+      for ch in range(0,len(channel_whitelist)):
+        predict_channel = channel_whitelist[ch]
+        file_path = os.path.join(output_directory, predict_channel + '.png')
+        util.write_image(file_path,
+                         target_error_panel[0,prediction_rows_start:prediction_rows, 0:prediction_part, :])
+        prediction_rows_start = prediction_rows_start + row//3
+        prediction_rows = prediction_rows + row//3
 
       logging.info('Done generating images')

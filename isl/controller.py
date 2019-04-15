@@ -118,21 +118,22 @@ def provide_preprocessed_data(
 # pylint: disable=invalid-name
 GetInputTargetAndPredictedParameters = NamedTuple(
     'GetInputTargetAndPredictedParameters', [
-        ('dp', data_provider.DataParameters),
-        ('ap', Optional[augment.AugmentParameters]),
-        ('extract_patch_size', int),
-        ('stride', int),
-        ('stitch_patch_size', int),
-        ('bp', Optional[util.BatchParameters]),
-        ('core_model', Callable),
-        ('add_head', Callable),
-        ('shuffle', bool),
-        ('num_classes', int),
-        ('loss', Callable),
-        ('is_train', bool),
+    ('dp', data_provider.DataParameters),
+    ('ap', Optional[augment.AugmentParameters]),
+    ('extract_patch_size', int),
+    ('stride', int),
+    ('stitch_patch_size', int),
+    ('bp', Optional[util.BatchParameters]),
+    ('core_model', Callable),
+    ('add_head', Callable),
+    ('shuffle', bool),
+    ('num_classes', int),
+    ('loss', Callable),
+    ('is_train', bool),
     ])
 # pylint: enable=invalid-name
-print('data_provider.DataParameters is: ', data_provider.DataParameters.io_parameters)
+print("controller.py GetInputTargetAndPredictedParameters.dp is: ",GetInputTargetAndPredictedParameters.dp, '\n')
+# assert GetInputTargetAndPredictedParameters.dp.io_parameters.row_start == 300, 'controller does not have row_start!'
 
 @tensorcheck.well_defined()
 def model(core_model: Callable,
